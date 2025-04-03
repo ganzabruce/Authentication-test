@@ -23,7 +23,7 @@ exports.createUser = async(req,res)=>{
             username: username,
             password: hashedPassword
         })
-        res.json({message: "user created"})
+        res.redirect('/login')
     } catch (error) {
         console.log(error)
     }
@@ -33,7 +33,7 @@ exports.getUser = async(req,res)=>{
     try {
         const user = await User.findOne({username: username})
         if (!user){
-            return res.json({message : "user already exists"})
+            return res.json({message : "user doesn't exist exists"})
         }
         const isVerified = await bcrypt.compare(password, user.password)
         if(!isVerified){
@@ -45,5 +45,22 @@ exports.getUser = async(req,res)=>{
     } catch (error) {
         console.log(error)
     }
+}
+
+exports.dashboard = async (req,res) => {
+    const token = req.cookies.token
+    const verifiedToken = jwt.verify(token,process.env.JWT_TOKEN)
+    const userId = verifiedToken.userId
+    try {
+        const user = await User.findById(userId)
+        res.render('dashboard',{userName : user.username})
+    } catch (error) {
+        return console.log(error)
+    }
+}
+
+exports.logout = (req,res)=>{
+    res.clearCookie('token')
+    res.redirect('/login',)
 }
 

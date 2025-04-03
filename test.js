@@ -4,6 +4,7 @@ const port = process.env.PORT
 const mongoose = require('mongoose')
 const MongoStore = require('connect-mongo')
 const cookieParser = require('cookie-parser')
+const jwt = require('jsonwebtoken')
 const session = require('express-session')
 const app = express()
 const path = require('./routes/router')
@@ -22,8 +23,8 @@ const auth = async(req,res,next)=>{
         if(!token){
             return res.redirect('/login')
         }
-        const verifiedToken = await token.verify(token,process.env.JWT_TOKEN)
-        const user = verifiedToken.userId 
+        const verifiedToken = await jwt.verify(token,process.env.JWT_TOKEN)
+        res.userId = verifiedToken.userId 
         next()
     } catch (error) {
         console.log(error)
@@ -59,7 +60,8 @@ app.get('/register',path)
 app.get('/login',path)
 app.post('/register',path)
 app.post('/login',path)
-
+app.post('/logout',path)
+app.get('/dashboard',auth,path)
 
 app.listen(port,()=>{
     console.log(`your app is running`)
